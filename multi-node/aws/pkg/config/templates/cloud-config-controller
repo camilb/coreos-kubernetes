@@ -122,8 +122,8 @@ coreos:
         Environment=NO_DEFAULT_POOLS=true
         Environment=ETCD_SCHEME=https
         Environment=ETCD_CA_CERT_FILE=/etc/etcd2/ssl/ca.pem
-        Environment=ETCD_CERT_FILE=/etc/etcd2/ssl/etcd.pem
-        Environment=ETCD_KEY_FILE=/etc/etcd2/ssl/etcd-key.pem
+        Environment=ETCD_CERT_FILE=/etc/etcd2/ssl/etcd-client.pem
+        Environment=ETCD_KEY_FILE=/etc/etcd2/ssl/etcd-client-key.pem
         Environment=ETCD_ENDPOINTS={{ .EtcdEndpoints }}
         ExecStart=/usr/bin/rkt run --inherit-env --stage1-from-dir=stage1-fly.aci \
         --volume=modules,kind=host,source=/lib/modules,readOnly=false \
@@ -132,7 +132,7 @@ coreos:
         --mount=volume=dns,target=/etc/resolv.conf \
         --volume=ssl,kind=host,source=/etc/kubernetes/ssl,readOnly=true \
         --mount=volume=ssl,target=/etc/etcd2/ssl \
-        --trust-keys-from-https quay.io/calico/node:v0.19.0
+        --trust-keys-from-https quay.io/calico/node:v0.22.0
         KillMode=mixed
         Restart=always
         TimeoutStartSec=0
@@ -451,7 +451,7 @@ write_files:
         containers:
           # The Calico policy controller.
           - name: kube-policy-controller
-            image: calico/kube-policy-controller:v0.2.0
+            image: calico/kube-policy-controller:v0.3.0
             env:
               - name: ETCD_ENDPOINTS
                 value: "{{ .EtcdEndpoints }}"
