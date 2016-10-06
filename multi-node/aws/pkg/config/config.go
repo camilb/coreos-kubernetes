@@ -198,9 +198,7 @@ func (c Cluster) Config() (*Config, error) {
 	config.MaxControllerCount = config.ControllerCount + 1
 
 	config.APIServerEndpoint = fmt.Sprintf("https://%s", c.ExternalDNSName)
-	if config.UseCalico {
-		config.K8sNetworkPlugin = "cni"
-	}
+	config.K8sNetworkPlugin = "cni"
 
 	var err error
 	if config.AMI, err = getAMI(config.Region, config.ReleaseChannel); err != nil {
