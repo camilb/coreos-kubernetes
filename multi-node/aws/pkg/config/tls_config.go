@@ -104,6 +104,8 @@ func (c *Cluster) NewTLSAssets() (*RawTLSAssets, error) {
 		DNSNames: []string{
 			fmt.Sprintf("*.%s.compute.internal", c.Region),
 			"*.ec2.internal",
+			fmt.Sprintf("*.%s.elb.amazonaws.com", c.Region),
+			"*.dev.netquestapps.com",
 		},
 
 		Duration: certDuration,

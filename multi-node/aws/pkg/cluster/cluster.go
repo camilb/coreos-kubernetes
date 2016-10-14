@@ -388,6 +388,22 @@ func (c *Cluster) Info() (*Info, error) {
 		elbName = *resp.StackResourceDetail.PhysicalResourceId
 	}
 
+	var elbEtcdName string
+	{
+		cfSvc := cloudformation.New(c.session)
+		resp, err := cfSvc.DescribeStackResource(
+			&cloudformation.DescribeStackResourceInput{
+				LogicalResourceId: aws.String("ElbETCDCluster"),
+				StackName:         aws.String(c.ClusterName),
+			},
+		)
+		if err != nil {
+			errmsg := "unable to get public IP of controller instance:\n" + err.Error()
+			return nil, fmt.Errorf(errmsg)
+		}
+		elbEtcdName = *resp.StackResourceDetail.PhysicalResourceId
+	}
+
 	elbSvc := elb.New(c.session)
 
 	var info Info
@@ -395,6 +411,7 @@ func (c *Cluster) Info() (*Info, error) {
 		resp, err := elbSvc.DescribeLoadBalancers(&elb.DescribeLoadBalancersInput{
 			LoadBalancerNames: []*string{
 				aws.String(elbName),
+				aws.String(elbEtcdName),
 			},
 			PageSize: aws.Int64(2),
 		})

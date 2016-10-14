@@ -81,7 +81,10 @@ kmsKeyArn: "{{.KMSKeyARN}}"
 ## This situation is being rectified with work towards automated management of etcd clusters
 
 # Set this value to the full HTTP/HTTPS endpoint of your existing etcd cluster or leave commented to build a new cluster as part of this stack.
-#etcdLoadBalancer: "http://my.etcd.cluster.local:2379"
+#etcdLoadBalancer: "http://my-existing-cluster.etcd.cluster.local:2379"
+
+# Set this value to the full HTTP/HTTPS endpoint of your new etcd cluster or leave blank and use a existing cluster.
+#etcdLoadBalancerInternal: "http://my-new-cluster.etcd.cluster.local:2379"
 
 # Number of etcd nodes
 # (Set to an odd number >= 3 for HA control plane)

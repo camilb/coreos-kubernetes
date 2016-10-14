@@ -3,47 +3,35 @@ coreos:
   update:
     reboot-strategy: etcd-lock
   units:
-    - name: etcd-aws.service
-      content: |
-        [Unit]
-        Description=configures and runs etcd in AWS.
-        Requires=decrypt-tls-assets.service
-        After=decrypt-tls-assets.service
+    - name: etcd2.service
+      drop-ins:
+        - name: 20-etcd2-aws-cluster.conf
+          content: |
+            [Unit]
+            Requires=decrypt-tls-assets.service
+            After=decrypt-tls-assets.service
 
-        [Service]
-        Restart=always
-        EnvironmentFile=/etc/etcd_aws.env
-        ExecStart=/usr/bin/docker run --name etcd-aws \
-        -p 2379:2379 -p 2380:2380 \
-        -v /var/lib/etcd2:/var/lib/etcd2 \
-        -v /etc/etcd2/ssl:/etc/etcd2/ssl \
-        -v /etc/ssl/certs:/etc/ssl/certs \
-        -e ETCD_BACKUP_BUCKET \
-        --rm camil/etcd-aws
-        ExecStop=-/usr/bin/docker rm -f etcd-aws \
-        ExecStartPre=/usr/bin/chown -R etcd:etcd /var/lib/etcd2
-        [Install]
-        WantedBy=multi-user.target
-      enable: true
-      command: start
+            [Service]
+            Environment=ETCD_NAME=%H
 
-    - name: cfn-signal.service
-      content: |
-        [Unit]
-        Description=Cloudformation Signal Ready
-        Requires=etcd-aws.service
-        After=etcd-aws.service
-        [Service]
-        Type=oneshot
-        EnvironmentFile=/etc/environment
-        ExecStart=/bin/bash -c '\
-        set -ex; \
-        eval $(docker run camil/ec2cluster); \
-        docker run --rm crewjam/awscli cfn-signal \
-        --resource AutoScaleEtcd --stack $TAG_AWS_CLOUDFORMATION_STACK_ID \
-        --region $REGION || true;'
-        [Install]
-        WantedBy=multi-user.target
+            Environment=ETCD_PEER_TRUSTED_CA_FILE=/etc/etcd2/ssl/ca.pem
+            Environment=ETCD_PEER_CERT_FILE=/etc/etcd2/ssl/etcd.pem
+            Environment=ETCD_PEER_KEY_FILE=/etc/etcd2/ssl/etcd-key.pem
+
+            Environment=ETCD_CLIENT_CERT_AUTH=true
+            Environment=ETCD_TRUSTED_CA_FILE=/etc/etcd2/ssl/ca.pem
+            Environment=ETCD_CERT_FILE=/etc/etcd2/ssl/etcd.pem
+            Environment=ETCD_KEY_FILE=/etc/etcd2/ssl/etcd-key.pem
+
+            Environment=ETCD_INITIAL_CLUSTER_STATE=new
+            Environment=ETCD_INITIAL_CLUSTER={{.EtcdInitialCluster}}
+            Environment=ETCD_DATA_DIR=/var/lib/etcd2
+            Environment=ETCD_LISTEN_CLIENT_URLS=https://%H:2379
+            Environment=ETCD_ADVERTISE_CLIENT_URLS=https://%H:2379
+            Environment=ETCD_LISTEN_PEER_URLS=https://%H:2380
+            Environment=ETCD_INITIAL_ADVERTISE_PEER_URLS=https://%H:2380
+            PermissionsStartOnly=true
+            ExecStartPre=/usr/bin/chown -R etcd:etcd /var/lib/etcd2
       enable: true
       command: start
 
@@ -120,12 +108,6 @@ write_files:
         docker run --net host --rm -v /etc/etcd2/ssl:/etc/etcd2/ssl --rm quay.io/coreos/awscli aws --region {{.Region}} kms decrypt --ciphertext-blob fileb://$encKey --output text --query Plaintext | base64 --decode > $tmpPath
         mv  $tmpPath /etc/etcd2/ssl/$(basename $encKey .enc)
       done
-
-  - path: /etc/etcd_aws.env
-    permissions: 0777
-    owner: root:root
-    content: |
-      ETCD_BACKUP_BUCKET=
 
   - path: /etc/etcd2/ssl/ca.pem.enc
     encoding: gzip+base64

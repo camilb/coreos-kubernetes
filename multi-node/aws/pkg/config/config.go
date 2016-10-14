@@ -130,6 +130,7 @@ type Cluster struct {
 	WorkerRootVolumeSize     int               `yaml:"workerRootVolumeSize,omitempty"`
 	WorkerSpotPrice          string            `yaml:"workerSpotPrice,omitempty"`
 	EtcdLoadBalancer         string            `yaml:"etcdLoadBalancer,omitempty"`
+	EtcdLoadBalancerInternal string            `yaml:"etcdLoadBalancerInternal,omitempty"`
 	EtcdCount                int               `yaml:"etcdCount"`
 	EtcdInstanceType         string            `yaml:"etcdInstanceType,omitempty"`
 	EtcdRootVolumeSize       int               `yaml:"etcdRootVolumeSize,omitempty"`
@@ -197,10 +198,11 @@ func (c Cluster) Config() (*Config, error) {
 	config.MinControllerCount = config.ControllerCount - 1
 	config.MaxControllerCount = config.ControllerCount + 1
 
+	config.MinEtcdCount = config.EtcdCount
+	config.MaxEtcdCount = config.EtcdCount + 1
+
 	config.APIServerEndpoint = fmt.Sprintf("https://%s", c.ExternalDNSName)
-	if config.UseCalico {
-		config.K8sNetworkPlugin = "cni"
-	}
+	config.K8sNetworkPlugin = "cni"
 
 	var err error
 	if config.AMI, err = getAMI(config.Region, config.ReleaseChannel); err != nil {
@@ -225,6 +227,12 @@ func (c Cluster) Config() (*Config, error) {
 
 		// Keep EtcdInitialCluster empty as sign for the template engine to skip etcd node creation
 		config.EtcdInitialCluster = ""
+	}
+	// Use custom etcd cluster if etcdLoadBalancerInternal is set.
+	if config.EtcdLoadBalancerInternal != "" {
+		config.EtcdEndpoints = fmt.Sprintf("%q", config.EtcdLoadBalancerInternal)
+		config.EtcdInitialCluster = fmt.Sprintf("%q", config.EtcdLoadBalancerInternal)
+
 	} else {
 		config.EtcdInstances = make([]etcdInstance, config.EtcdCount)
 		var etcdEndpoints, etcdInitialCluster bytes.Buffer
@@ -514,6 +522,9 @@ type Config struct {
 
 	MinControllerCount int
 	MaxControllerCount int
+
+	MinEtcdCount int
+	MaxEtcdCount int
 
 	EtcdEndpoints      string
 	EtcdInitialCluster string
