@@ -24,14 +24,12 @@ var goodNetworkingConfigs = []string{
 	`
 vpcCIDR: 10.4.3.0/24
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 172.4.0.0/16
 serviceCIDR: 172.5.0.0/16
 dnsServiceIP: 172.5.100.101
 `, `
 vpcCIDR: 10.4.0.0/16
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 10.6.0.0/16
 serviceCIDR: 10.5.0.0/16
 dnsServiceIP: 10.5.100.101
@@ -60,7 +58,6 @@ var incorrectNetworkingConfigs = []string{
 	`
 vpcCIDR: 10.4.2.0/23
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 10.4.0.0/16 #podCIDR contains vpcCDIR.
 serviceCIDR: 10.5.0.0/16
 dnsServiceIP: 10.5.100.101
@@ -68,28 +65,24 @@ dnsServiceIP: 10.5.100.101
 	`
 vpcCIDR: 10.4.2.0/23
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 10.5.0.0/16
 serviceCIDR: 10.4.0.0/16 #serviceCIDR contains vpcCDIR.
 dnsServiceIP: 10.4.100.101
 `, `
 vpcCIDR: 10.4.0.0/16
 instanceCIDR: 10.5.3.0/24 #instanceCIDR not in vpcCIDR
-controllerIP: 10.5.3.5
 podCIDR: 10.6.0.0/16
 serviceCIDR: 10.5.0.0/16
 dnsServiceIP: 10.5.100.101
 `, `
 vpcCIDR: 10.4.3.0/16
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 172.4.0.0/16
 serviceCIDR: 172.5.0.0/16
 dnsServiceIP: 172.5.0.1 #dnsServiceIP conflicts with kubernetesServiceIP
 `, `
 vpcCIDR: 10.4.3.0/16
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 10.4.0.0/16 #vpcCIDR overlaps with podCIDR
 serviceCIDR: 172.5.0.0/16
 dnsServiceIP: 172.5.100.101
@@ -97,7 +90,6 @@ dnsServiceIP: 172.5.100.101
 `, `
 vpcCIDR: 10.4.3.0/16
 instanceCIDR: 10.4.3.0/24
-controllerIP: 10.4.3.5
 podCIDR: 172.4.0.0/16
 serviceCIDR: 172.5.0.0/16
 dnsServiceIP: 172.6.100.101 #dnsServiceIP not in service CIDR
@@ -272,7 +264,6 @@ func TestAvailabilityZones(t *testing.T) {
 			conf: minimalConfigYaml + `
 # You can specify multiple subnets to be created in order to achieve H/A
 vpcCIDR: 10.4.3.0/16
-controllerIP: 10.4.3.50
 subnets:
   - availabilityZone: ap-northeast-1a
     instanceCIDR: 10.4.3.0/24
@@ -307,20 +298,19 @@ func TestMultipleSubnets(t *testing.T) {
 
 	validConfigs := []struct {
 		conf    string
-		subnets []Subnet
+		subnets []*Subnet
 	}{
 		{
 			conf: `
 # You can specify multiple subnets to be created in order to achieve H/A
 vpcCIDR: 10.4.3.0/16
-controllerIP: 10.4.3.50
 subnets:
   - availabilityZone: ap-northeast-1a
     instanceCIDR: 10.4.3.0/24
   - availabilityZone: ap-northeast-1c
     instanceCIDR: 10.4.4.0/24
 `,
-			subnets: []Subnet{
+			subnets: []*Subnet{
 				{
 					InstanceCIDR:     "10.4.3.0/24",
 					AvailabilityZone: "ap-northeast-1a",
@@ -335,11 +325,10 @@ subnets:
 			conf: `
 # Given AZ/CIDR, missing subnets fall-back to the single subnet with the AZ/CIDR given.
 vpcCIDR: 10.4.3.0/16
-controllerIP: 10.4.3.50
 availabilityZone: ap-northeast-1a
 instanceCIDR: 10.4.3.0/24
 `,
-			subnets: []Subnet{
+			subnets: []*Subnet{
 				{
 					AvailabilityZone: "ap-northeast-1a",
 					InstanceCIDR:     "10.4.3.0/24",
@@ -350,12 +339,11 @@ instanceCIDR: 10.4.3.0/24
 			conf: `
 # Given AZ/CIDR, empty subnets fall-back to the single subnet with the AZ/CIDR given.
 vpcCIDR: 10.4.3.0/16
-controllerIP: 10.4.3.50
 availabilityZone: ap-northeast-1a
 instanceCIDR: 10.4.3.0/24
 subnets: []
 `,
-			subnets: []Subnet{
+			subnets: []*Subnet{
 				{
 					AvailabilityZone: "ap-northeast-1a",
 					InstanceCIDR:     "10.4.3.0/24",
@@ -368,7 +356,7 @@ subnets: []
 availabilityZone: "ap-northeast-1a"
 subnets: []
 `,
-			subnets: []Subnet{
+			subnets: []*Subnet{
 				{
 					AvailabilityZone: "ap-northeast-1a",
 					InstanceCIDR:     "10.0.0.0/24",
@@ -380,7 +368,7 @@ subnets: []
 # Missing subnets field fall-backs to the single subnet with the default az/cidr.
 availabilityZone: "ap-northeast-1a"
 `,
-			subnets: []Subnet{
+			subnets: []*Subnet{
 				{
 					AvailabilityZone: "ap-northeast-1a",
 					InstanceCIDR:     "10.0.0.0/24",
@@ -422,7 +410,6 @@ subnets:
 subnets:
 # Both AZ/instanceCIDR is given. This is O.K. but...
 - availabilityZone: "ap-northeast-1a"
-# instanceCIDR does not include the default controllerIP
 - instanceCIDR: 10.0.5.0/24
 `,
 		`
@@ -456,7 +443,7 @@ subnets:
 		confBody := minimalConfigYaml + conf
 		_, err := ClusterFromBytes([]byte(confBody))
 		if err == nil {
-			t.Errorf("expected error parsing invalid config: %s", confBody)
+			t.Errorf("expected error parsing invalid config:\n%s", confBody)
 		}
 	}
 
