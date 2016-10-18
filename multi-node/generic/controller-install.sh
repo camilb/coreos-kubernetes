@@ -5,7 +5,7 @@ set -e
 export ETCD_ENDPOINTS=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.4.1_coreos.0
+export K8S_VER=v1.4.3_coreos.0
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
@@ -698,11 +698,11 @@ EOF
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: kubernetes-dashboard-v1.4.1
+  name: kubernetes-dashboard-v1.4.3
   namespace: kube-system
   labels:
     k8s-app: kubernetes-dashboard
-    version: v1.4.1
+    version: v1.4.3
     kubernetes.io/cluster-service: "true"
 spec:
   replicas: 1
@@ -712,7 +712,7 @@ spec:
     metadata:
       labels:
         k8s-app: kubernetes-dashboard
-        version: v1.4.1
+        version: v1.4.3
         kubernetes.io/cluster-service: "true"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
@@ -720,7 +720,7 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.1
+        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.3
         resources:
           limits:
             cpu: 100m

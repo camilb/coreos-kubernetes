@@ -42,7 +42,7 @@
 
  * [Issue #2](https://github.com/magiconair/properties/issues/2): Fixed goroutine leak in parser which created two lexers but cleaned up only one
 
-### [1.4.1](https://github.com/magiconair/properties/tags/v1.4.1) - 13 Nov 2014
+### [1.4.1](https://github.com/magiconair/properties/tags/v1.4.3) - 13 Nov 2014
 
  * [Issue #1](https://github.com/magiconair/properties/issues/1): Fixed bug in Keys() method which returned an empty string
 
