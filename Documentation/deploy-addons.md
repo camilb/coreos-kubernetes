@@ -142,7 +142,7 @@ spec:
 
 *Note:* The above YAML definition is based on the upstream DNS addon in the [Kubernetes addon folder][k8s-dns-addon].
 
-[k8s-dns-addon]: https://github.com/kubernetes/kubernetes/tree/v1.4.3/cluster/addons/dns
+[k8s-dns-addon]: https://github.com/kubernetes/kubernetes/tree/v1.4.4/cluster/addons/dns
 
 This single YAML file is actually creating 2 different Kubernetes objects, separated by `---`.
 
@@ -173,11 +173,11 @@ Create `kube-dashboard-rc.yaml` and `kube-dashboard-svc.yaml` on your local mach
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: kubernetes-dashboard-v1.4.3
+  name: kubernetes-dashboard-v1.4.4
   namespace: kube-system
   labels:
     k8s-app: kubernetes-dashboard
-    version: v1.4.3
+    version: v1.4.4
     kubernetes.io/cluster-service: "true"
 spec:
   replicas: 1
@@ -187,7 +187,7 @@ spec:
     metadata:
       labels:
         k8s-app: kubernetes-dashboard
-        version: v1.4.3
+        version: v1.4.4
         kubernetes.io/cluster-service: "true"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
@@ -195,7 +195,7 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.3
+        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.4
         resources:
           limits:
             cpu: 100m
@@ -245,7 +245,7 @@ Access the dashboard by port forwarding with `kubectl`.
 
 ```sh
 $ kubectl get pods --namespace=kube-system
-$ kubectl port-forward kubernetes-dashboard-v1.4.3-SOME-ID 9090 --namespace=kube-system
+$ kubectl port-forward kubernetes-dashboard-v1.4.4-SOME-ID 9090 --namespace=kube-system
 ```
 
 Then visit [http://127.0.0.1:9090](http://127.0.0.1:9090/) in your browser.

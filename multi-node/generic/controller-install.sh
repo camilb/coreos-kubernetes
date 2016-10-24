@@ -5,7 +5,7 @@ set -e
 export ETCD_ENDPOINTS=
 
 # Specify the version (vX.Y.Z) of Kubernetes assets to deploy
-export K8S_VER=v1.4.3_coreos.0
+export K8S_VER=v1.4.4_coreos.0
 
 # Hyperkube image repository to use.
 export HYPERKUBE_IMAGE_REPO=quay.io/coreos/hyperkube
@@ -675,17 +675,17 @@ EOF
         cat << EOF > $TEMPLATE
 kind: Service
 apiVersion: v1
-metadata: 
+metadata:
   name: heapster
   namespace: kube-system
-  labels: 
+  labels:
     kubernetes.io/cluster-service: "true"
     kubernetes.io/name: "Heapster"
-spec: 
-  ports: 
+spec:
+  ports:
     - port: 80
       targetPort: 8082
-  selector: 
+  selector:
     k8s-app: heapster
 EOF
     fi
@@ -698,11 +698,11 @@ EOF
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: kubernetes-dashboard-v1.4.3
+  name: kubernetes-dashboard-v1.4.1
   namespace: kube-system
   labels:
     k8s-app: kubernetes-dashboard
-    version: v1.4.3
+    version: v1.4.1
     kubernetes.io/cluster-service: "true"
 spec:
   replicas: 1
@@ -712,7 +712,7 @@ spec:
     metadata:
       labels:
         k8s-app: kubernetes-dashboard
-        version: v1.4.3
+        version: v1.4.1
         kubernetes.io/cluster-service: "true"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
@@ -720,7 +720,7 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.3
+        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.1
         resources:
           limits:
             cpu: 100m
